@@ -2,6 +2,24 @@
 
 > **"What meaningfully changed since I last checked, and what deserves my attention now?"**
 
+[![Live Demo](https://img.shields.io/badge/Vercel-Live_Demo-black?style=for-the-badge&logo=vercel)](https://stock-watch-gamma.vercel.app)
+[![Backend API](https://img.shields.io/badge/Render-API_Live-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://stock-watch-oabd.onrender.com/api/health)
+[![API Docs](https://img.shields.io/badge/FastAPI-Swagger_Docs-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://stock-watch-oabd.onrender.com/docs)
+[![Database](https://img.shields.io/badge/Supabase-PostgreSQL_Database-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
+
+---
+
+## 🌐 Live Deployments
+
+| Component | Provider | Live URL | Description |
+| :--- | :--- | :--- | :--- |
+| **Frontend Web App** | **Vercel** | [stock-watch-gamma.vercel.app](https://stock-watch-gamma.vercel.app) | React + Vite UI with Realtime PostgreSQL subscriptions |
+| **Backend Service** | **Render** | [stock-watch-oabd.onrender.com](https://stock-watch-oabd.onrender.com) | FastAPI cloud server with NSE & Yahoo market feeds |
+| **Interactive API Docs** | **FastAPI Swagger** | [stock-watch-oabd.onrender.com/docs](https://stock-watch-oabd.onrender.com/docs) | Full interactive REST API documentation |
+| **Health Check** | **Render API** | [stock-watch-oabd.onrender.com/api/health](https://stock-watch-oabd.onrender.com/api/health) | Live system status & IST market hours clock |
+| **Database & Auth** | **Supabase** | `antgmodxxshcaxeqjbdj.supabase.co` | PostgreSQL with Row Level Security & Auth triggers |
+| **Source Code** | **GitHub** | [Shreyya407/stock_watch](https://github.com/Shreyya407/stock_watch) | Monorepo containing backend, frontend & SQL schema |
+
 ---
 
 ## 1. Product Pitch
@@ -28,25 +46,26 @@ GrowwPulse solves this with **Baseline Snapshot Intelligence**:
 2. **Deterministic Attention Scoring:** A 0–100 composite score based on Price Delta, Volume Multiplier, and Volatility Expansion.
 3. **Signal Explainability:** "Why am I seeing this?" provides mathematical transparency into the score without speculative narratives.
 4. **Mark Current as Seen:** Users can review changes and explicitly reset their baseline when satisfied.
+5. **Real-time Synchronization:** Powered by Supabase PostgreSQL Realtime channels.
 
 ---
 
 ## 4. Architecture
 
-A clean, monolithic, highly performant architecture:
+A clean, resilient, cloud-ready architecture:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                 React + Vite Frontend                   │
-│          (Vanilla CSS, Lucide Icons, IST Clock)         │
+│      Hosted on Vercel • Supabase Realtime Channels      │
 └────────────────────────────┬────────────────────────────┘
-                             │  HTTP / JSON + Bearer JWT
+                             │  HTTPS / JSON + Bearer JWT
                              ▼
 ┌─────────────────────────────────────────────────────────┐
-│                   FastAPI Monolith                      │
+│              FastAPI Monolith (on Render)               │
 │                                                         │
 │   ├── Auth (Supabase JWT Verification)                 │
-│   ├── Storage (Supabase PostgreSQL / Local Fallback)    │
+│   ├── Storage (Supabase PostgreSQL Single Source)       │
 │   ├── Real Market Data (NSE Primary + Yahoo Fallback)   │
 │   ├── 15s In-Memory Symbol TTL Cache                    │
 │   └── Analytics & Attention Scoring Engine              │
@@ -56,28 +75,17 @@ A clean, monolithic, highly performant architecture:
 ┌───────────────────────────┐   ┌───────────────────────────┐
 │   Supabase PostgreSQL     │   │     Live Market Data      │
 │  - auth.users             │   │  - Primary: NSE India     │
-│  - watchlists (RLS)       │   │  - Fallback: Yahoo (.NS)  │
-│  - snapshots (RLS)        │   │  - Stale Cache Handling   │
+│  - profiles               │   │  - Fallback: Yahoo (.NS)  │
+│  - watchlists (RLS)       │   │  - Stale Cache Handling   │
+│  - snapshots (RLS)        │   │  - 118 NSE Companies      │
+│  - snapshot_history       │   │    Enriched with Industry │
+│  - companies (Master)     │   │    & Market Cap           │
 └───────────────────────────┘   └───────────────────────────┘
 ```
 
 ---
 
-## 5. Data Flow
-1. **User Request:** Frontend queries `GET /api/watchlist/changes`.
-2. **Authentication:** FastAPI inspects Bearer JWT and extracts `user_id`.
-3. **Baseline Lookup:** Storage loads user-specific baseline snapshots (`price`, `volume`, `timestamp`).
-4. **Market Data Fetch:**
-   - Checks 15-second TTL cache per symbol.
-   - On cache miss: queries official NSE endpoints.
-   - On NSE rate limit/error: falls back to Yahoo Finance (`{SYMBOL}.NS`).
-   - On total network outage: serves last cached quote marked `STALE`.
-5. **Analytics Execution:** Computes Price Delta %, Rupee Change, Volume Multiplier, Volatility-Adjusted Move, Opening Gap %, and Attention Score.
-6. **Response:** Frontend renders the "Since you last checked" summary, Market Pulse strip, and ranked Stock Cards.
-
----
-
-## 6. Analytics Formulas
+## 5. Analytics Formulas
 
 ### 1. Price Delta %
 $$\text{PriceDeltaPct} = \left( \frac{\text{CurrentPrice} - \text{SnapshotPrice}}{\text{SnapshotPrice}} \right) \times 100$$
@@ -96,7 +104,7 @@ $$\text{OpeningGapPct} = \left( \frac{\text{TodayOpen} - \text{PreviousClose}}{\
 
 ---
 
-## 7. Attention Score Algorithm
+## 6. Attention Score Algorithm
 
 A transparent, deterministic formula bounded from **0 to 100**:
 
@@ -113,102 +121,33 @@ $$\text{AttentionScore} = \text{PriceScore (40\%)} + \text{VolumeScore (30\%)} +
 
 ---
 
-## 8. Snapshot Logic
-- **Baseline Initialization:** When a symbol is added, current price & volume are stored as the baseline.
-- **Normal Refreshes:** Polling or manual refresh compares live prices against the **existing baseline**. Snapshots are **NEVER overwritten** during normal refresh.
-- **Mark Current as Seen:** When the user clicks "Mark Current as Seen", the backend updates baseline snapshots to the live quotes. Deviations immediately reset to $\sim 0\%$.
+## 7. Database Schema (Supabase PostgreSQL)
+
+Full schema available in [`backend/supabase_schema.sql`](backend/supabase_schema.sql):
+
+- **`public.profiles`**: User profile & personalization preferences with automatic trigger on `auth.users`.
+- **`public.watchlists`**: User-selected watchlist equities with Row Level Security.
+- **`public.snapshots`**: Baseline snapshot records (`price`, `volume`, `timestamp`) per user and symbol.
+- **`public.snapshot_history`**: Audit trail and timeline of every baseline reset event.
+- **`public.companies`**: Master catalog of 118+ NSE equities with sectors, specific industry classifications, 52-week ranges, and market capitalization.
 
 ---
 
-## 9. Market Data Resilience & Zero Mock Data
-- **Real Data Only:** Zero fabricated prices.
-- **15-Second TTL Cache:** Prevents rate-limiting and external latency.
-- **Clear UI Badges:**
-  - `LIVE • NSE`
-  - `LIVE • YAHOO FINANCE`
-  - `STALE • Last updated X min ago`
-- **Graceful Partial Failure:** If one stock's network request fails, all other stocks continue loading without crashing.
-
----
-
-## 10. Supabase Setup
-
-### Database Tables (PostgreSQL):
-```sql
--- Watchlist table
-CREATE TABLE watchlists (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    symbol VARCHAR(30) NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    UNIQUE(user_id, symbol)
-);
-
--- Snapshots table
-CREATE TABLE snapshots (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    symbol VARCHAR(30) NOT NULL,
-    price NUMERIC(14, 2) NOT NULL,
-    volume BIGINT NOT NULL,
-    timestamp TIMESTAMPTZ DEFAULT now(),
-    UNIQUE(user_id, symbol)
-);
-
--- Enable RLS
-ALTER TABLE watchlists ENABLE ROW LEVEL SECURITY;
-ALTER TABLE snapshots ENABLE ROW LEVEL SECURITY;
-
--- Policies
-CREATE POLICY "Users can access their own watchlists"
-ON watchlists FOR ALL USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can access their own snapshots"
-ON snapshots FOR ALL USING (auth.uid() = user_id);
-```
-
----
-
-## 11. Environment Variables
-
-### Backend (`groww/backend/.env`)
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-PORT=8000
-HOST=0.0.0.0
-```
-
-### Frontend (`groww/frontend/.env`)
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_API_BASE_URL=http://localhost:8000/api
-```
-
----
-
-## 12. Local Setup & Running
+## 8. Local Setup & Running
 
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+ & npm
 
-### 1. Run Backend
+### 1. Run Backend Locally
 ```bash
 cd groww/backend
-python -m pip install -r requirements.txt
+pip install -r requirements.txt
 python run.py
 ```
 Backend will start at: `http://localhost:8000`
 
-Verify:
-```bash
-curl http://localhost:8000/api/health
-```
-
-### 2. Run Frontend
+### 2. Run Frontend Locally
 ```bash
 cd groww/frontend
 npm install
@@ -218,8 +157,31 @@ Frontend will start at: `http://localhost:5173`
 
 ---
 
-## 13. Testing
-Run the backend test suite:
+## 9. Deployment Guide
+
+### Deploy Backend to Render:
+1. Create a **Web Service** pointing to `Shreyya407/stock_watch`.
+2. **Root Directory**: `backend`
+3. **Build Command**: `pip install -r requirements.txt`
+4. **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+5. **Environment Variables**:
+   - `SUPABASE_URL`: `https://antgmodxxshcaxeqjbdj.supabase.co`
+   - `SUPABASE_SERVICE_ROLE_KEY`: `<service-role-key>`
+   - `SUPABASE_ANON_KEY`: `<anon-key>`
+   - `JWT_SECRET`: `growwpulse-jwt-secret-key-2026-secure`
+
+### Deploy Frontend to Vercel:
+1. Import repository on Vercel.
+2. **Root Directory**: `frontend`
+3. **Environment Variables**:
+   - `VITE_API_BASE_URL`: `https://stock-watch-oabd.onrender.com/api`
+   - `VITE_SUPABASE_URL`: `https://antgmodxxshcaxeqjbdj.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY`: `<anon-key>`
+
+---
+
+## 10. Automated Tests
+Run the pytest test suite:
 ```bash
 cd groww/backend
 python -m pytest
@@ -227,6 +189,9 @@ python -m pytest
 
 ---
 
-## 14. Trade-offs & Limitations
-- **Intraday Tick Granularity:** To avoid high data costs, historical volatility and 20-day volumes leverage 1-month daily and 15-minute intraday charts from Yahoo Finance / NSE quotes.
-- **NSE WAF / IP Challenges:** Direct NSE scraping may encounter Cloudflare/Akamai rate-limits from certain hosting providers, which is seamlessly mitigated by our Yahoo Finance fallback layer.
+## 11. Author & Acknowledgments
+Built with ❤️ for Indian equity market traders.
+- **Frontend:** React, Vite, Lucide Icons, Vanilla CSS Design System
+- **Backend:** FastAPI, Python, Uvicorn
+- **Market Data:** NSE India & Yahoo Finance (.NS)
+- **Database:** Supabase PostgreSQL with Realtime Pub/Sub
