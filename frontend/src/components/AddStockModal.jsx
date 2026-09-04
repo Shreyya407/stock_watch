@@ -293,17 +293,6 @@ export const AddStockModal = () => {
           ) : filteredResults.length === 0 ? (
             <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.86rem' }}>
               <p>No matching NSE equities found for "{query}".</p>
-              {query.length >= 2 && (
-                <button
-                  type="button"
-                  onClick={() => handleSelect(query.toUpperCase().trim())}
-                  className="btn-primary"
-                  style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                >
-                  <Plus size={14} />
-                  <span>Add "{query.toUpperCase().trim()}" by Ticker</span>
-                </button>
-              )}
             </div>
           ) : (
             <div className="search-results-list" style={{ maxHeight: '380px', overflowY: 'auto' }}>

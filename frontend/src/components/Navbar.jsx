@@ -15,7 +15,6 @@ export const Navbar = () => {
             <Activity size={20} />
           </div>
           <span className="brand-name">GrowwPulse</span>
-          <span className="brand-badge">Change-First Watchlist</span>
         </div>
 
         <div className="navbar-actions">
