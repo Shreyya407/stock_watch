@@ -124,12 +124,7 @@ export const StockCard = ({ stock }) => {
       </div>
 
       {/* Card Footer Actions */}
-      <div className="card-footer">
-        <div className={`source-tag ${isStale ? 'stale' : ''}`} title="Live Data Source Provider">
-          <Radio size={11} />
-          <span>{formatSource()}</span>
-        </div>
-
+      <div className="card-footer" style={{ justifyContent: 'flex-end' }}>
         <div className="card-action-links">
           <button
             onClick={() => setSelectedStockForExplain(stock)}

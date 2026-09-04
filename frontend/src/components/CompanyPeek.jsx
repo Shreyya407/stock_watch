@@ -121,7 +121,6 @@ export const CompanyPeek = () => {
             color: 'var(--text-muted)'
           }}>
             <span>Exchange: <strong>{details.exchange || 'NSE India'}</strong></span>
-            <span>Feed: <strong>{source}</strong></span>
             <span>As of: <strong>{formatTimestamp(quoteTimestamp)}</strong></span>
           </div>
         </div>

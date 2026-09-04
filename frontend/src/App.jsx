@@ -2,7 +2,6 @@ import React from 'react';
 import { Navbar } from './components/Navbar';
 import { LandingPage } from './components/LandingPage';
 import { HeroSummary } from './components/HeroSummary';
-import { MarketPulse } from './components/MarketPulse';
 import { Watchlist } from './components/Watchlist';
 import { ExplainabilityModal } from './components/ExplainabilityModal';
 import { CompanyPeek } from './components/CompanyPeek';
@@ -42,8 +41,6 @@ export const App = () => {
           )}
 
           <HeroSummary />
-
-          <MarketPulse />
 
           <Watchlist />
         </main>
