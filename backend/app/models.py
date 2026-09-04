@@ -89,6 +89,9 @@ class WatchlistChangesResponse(BaseModel):
 
 class AddWatchlistRequest(BaseModel):
     symbol: str
+    notes: Optional[str] = None
+    target_price: Optional[float] = None
+    tags: Optional[List[str]] = None
 
 
 class WatchlistActionResponse(BaseModel):
@@ -111,6 +114,45 @@ class UserProfile(BaseModel):
     name: Optional[str] = None
 
 
+class UserSettings(BaseModel):
+    attention_threshold: int = 40
+    default_sort: str = "attention_score"
+    theme: str = "dark"
+    auto_refresh_interval: int = 15
+    notifications_enabled: bool = True
+
+
+class CompanyMetadata(BaseModel):
+    symbol: str
+    company_name: str
+    sector: Optional[str] = None
+    industry: Optional[str] = None
+    exchange: Optional[str] = "NSE"
+    market_cap: Optional[float] = None
+    fifty_two_week_high: Optional[float] = None
+    fifty_two_week_low: Optional[float] = None
+    pe_ratio: Optional[float] = None
+    last_price: Optional[float] = None
+    last_volume: Optional[int] = None
+    avg_volume_20d: Optional[float] = None
+    historical_volatility: Optional[float] = None
+    last_updated: Optional[str] = None
+
+
+class SnapshotHistoryItem(BaseModel):
+    id: Optional[str] = None
+    user_id: str
+    symbol: str
+    price: float
+    volume: Optional[int] = None
+    attention_score: Optional[int] = None
+    attention_category: Optional[str] = None
+    price_delta_pct: Optional[float] = None
+    trigger_event: Optional[str] = "MANUAL"
+    snapshot_timestamp: str
+    created_at: Optional[str] = None
+
+
 class AuthLoginRequest(BaseModel):
     email: str
     password: str
@@ -126,4 +168,3 @@ class AuthResponse(BaseModel):
     token: str
     user: UserProfile
     message: str = "Success"
-

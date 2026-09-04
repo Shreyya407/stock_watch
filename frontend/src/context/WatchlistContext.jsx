@@ -124,6 +124,56 @@ export const WatchlistProvider = ({ children }) => {
     }
   }, [user, loadChanges]);
 
+  // Supabase Realtime Listener: Subscribes to changes in watchlists, snapshots, snapshot_history
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase || !user?.id) return;
+
+    console.log('[GrowwPulse Realtime] Subscribing to real-time events for user:', user.id);
+
+    const realtimeChannel = supabase
+      .channel(`realtime-user-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'watchlists',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('[Realtime] Watchlist modified:', payload.eventType);
+          loadChanges(true);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'snapshots',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('[Realtime] Snapshot updated:', payload.eventType);
+          loadChanges(true);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(realtimeChannel);
+    };
+  }, [user?.id, loadChanges]);
+
+  // Periodic 15-second live quote refresh
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => {
+      loadChanges(true);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [user, loadChanges]);
+
   // Login handler - strictly through Supabase Auth
   const handleLogin = async (email, password) => {
     if (!supabase) {
@@ -152,6 +202,9 @@ export const WatchlistProvider = ({ children }) => {
     localStorage.setItem(STORAGE_KEY_TOKEN, data.session.access_token);
     localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
     setIsAuthModalOpen(false);
+    setTimeout(() => {
+      loadChanges();
+    }, 50);
     return data;
   };
 
@@ -196,7 +249,7 @@ export const WatchlistProvider = ({ children }) => {
       setIsAuthModalOpen(false);
       return data;
     } else {
-      // Try immediate sign-in if email confirmation is turned off in Supabase
+      // Immediate sign-in if email confirmation is turned off in Supabase
       const loginRes = await supabase.auth.signInWithPassword({ email, password });
       if (loginRes.data && loginRes.data.session) {
         setUser(u);

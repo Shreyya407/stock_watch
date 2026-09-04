@@ -15,8 +15,9 @@ class ApiService {
       ...options.headers,
     };
 
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
+    const activeToken = this.token || (typeof localStorage !== 'undefined' ? localStorage.getItem('growwpulse_auth_token') : null);
+    if (activeToken) {
+      headers['Authorization'] = `Bearer ${activeToken}`;
     }
 
     const url = `${API_BASE_URL}${endpoint}`;
@@ -29,13 +30,39 @@ class ApiService {
 
       if (!response.ok) {
         let errorMsg = `Server returned ${response.status}`;
+        let errorCode = null;
+
         try {
           const errData = await response.json();
-          if (errData && errData.detail) {
-            errorMsg = errData.detail;
+          if (errData) {
+            if (errData.detail) {
+              if (typeof errData.detail === 'object') {
+                errorMsg = errData.detail.message || errData.detail.error || JSON.stringify(errData.detail);
+                errorCode = errData.detail.error;
+              } else if (typeof errData.detail === 'string') {
+                errorMsg = errData.detail;
+              }
+            } else if (errData.message) {
+              errorMsg = errData.message;
+              errorCode = errData.error;
+            }
           }
         } catch (_) {}
-        throw new Error(errorMsg);
+
+        if (response.status === 503) {
+          if (!errorMsg || errorMsg.includes('Server returned 503')) {
+            errorMsg = 'Database unavailable — your changes were not saved.';
+          }
+        } else if (response.status === 401) {
+          if (!errorMsg || errorMsg.includes('Server returned 401')) {
+            errorMsg = 'Session expired or unauthorized. Please sign in again.';
+          }
+        }
+
+        const customError = new Error(errorMsg);
+        customError.status = response.status;
+        customError.code = errorCode;
+        throw customError;
       }
 
       return await response.json();
