@@ -25,11 +25,6 @@ export const LandingPage = () => {
       {/* Hero Section */}
       <section className="landing-hero">
         <div className="landing-hero-content">
-          <div className="landing-badge">
-            <Sparkles size={16} className="text-accent" />
-            <span>GrowwPulse • Change-First Market Watchlist</span>
-          </div>
-
           <h1 className="landing-title">
             Stop checking 50 tickers.<br />
             <span className="gradient-text">See what changed since you last looked.</span>
