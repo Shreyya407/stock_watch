@@ -109,11 +109,13 @@ export const StockCard = ({ stock }) => {
       <div className="card-metrics-grid">
         <div className="sub-metric">
           <span className="sub-metric-label">Volume</span>
-          <span className="sub-metric-value">{volumeMultiplier}× normal</span>
+          <span className="sub-metric-value">{volumeMultiplier?.toFixed ? `${volumeMultiplier.toFixed(2)}×` : `${volumeMultiplier}×`} avg</span>
         </div>
         <div className="sub-metric">
           <span className="sub-metric-label">Volatility</span>
-          <span className="sub-metric-value">{volatilityAdjustedMovement}× typical</span>
+          <span className="sub-metric-value">
+            {volatilityAdjustedMovement > 0 ? `${volatilityAdjustedMovement.toFixed(1)}× typical` : 'Normal'}
+          </span>
         </div>
         <div className="sub-metric">
           <span className="sub-metric-label">Day Move</span>
@@ -124,33 +126,33 @@ export const StockCard = ({ stock }) => {
       </div>
 
       {/* Card Footer Actions */}
-      <div className="card-footer" style={{ justifyContent: 'flex-end' }}>
+      <div className="card-footer">
+        <button
+          onClick={() => setSelectedStockForExplain(stock)}
+          className="btn-explain-chip"
+          title="Explain why this score was calculated"
+        >
+          <HelpCircle size={13} />
+          <span>Why this score?</span>
+        </button>
+
         <div className="card-action-links">
           <button
-            onClick={() => setSelectedStockForExplain(stock)}
-            className="btn-link"
-            title="Explain why this score was calculated"
-          >
-            <HelpCircle size={13} />
-            <span>Why seeing this?</span>
-          </button>
-
-          <button
             onClick={() => setSelectedStockForPeek(stock)}
-            className="btn-link-secondary"
+            className="btn-peek-chip"
             title="Quick fundamental research peek"
           >
             <Eye size={13} />
-            <span>Peek</span>
+            <span>Company Peek</span>
           </button>
 
           <button
             onClick={() => removeStock(symbol)}
-            className="btn-delete"
+            className="btn-delete-chip"
             title={`Remove ${symbol} from watchlist`}
             aria-label={`Remove ${symbol}`}
           >
-            <Trash2 size={14} />
+            <Trash2 size={13} />
           </button>
         </div>
       </div>

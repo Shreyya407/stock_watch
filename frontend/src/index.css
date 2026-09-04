@@ -785,7 +785,8 @@ a {
 }
 
 .sub-metric-value {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -798,70 +799,74 @@ a {
   justify-content: space-between;
   border-top: 1px solid var(--border-color);
   padding-top: 12px;
-}
-
-.source-tag {
-  font-size: 0.68rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.source-tag.stale {
-  color: var(--worth-color);
+  gap: 8px;
 }
 
 .card-action-links {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 
-.btn-link {
-  font-size: 0.78rem;
+.btn-explain-chip {
+  font-size: 0.74rem;
   font-weight: 600;
   color: var(--accent-primary);
+  background: var(--accent-subtle);
+  border: 1px solid var(--border-accent);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 6px;
-  border-radius: var(--radius-sm);
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
   transition: var(--transition);
+  cursor: pointer;
 }
 
-.btn-link:hover {
-  background: var(--accent-subtle);
+.btn-explain-chip:hover {
+  background: var(--accent-hover);
+  color: #fff;
+  border-color: var(--accent-hover);
 }
 
-.btn-link-secondary {
-  font-size: 0.78rem;
+.btn-peek-chip {
+  font-size: 0.74rem;
   font-weight: 500;
   color: var(--text-secondary);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 6px;
-  border-radius: var(--radius-sm);
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
   transition: var(--transition);
+  cursor: pointer;
 }
 
-.btn-link-secondary:hover {
+.btn-peek-chip:hover {
   color: var(--text-primary);
   background: var(--surface-hover);
+  border-color: var(--border-hover);
 }
 
-.btn-delete {
+.btn-delete-chip {
   color: var(--text-muted);
-  padding: 4px;
-  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 5px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: var(--transition);
+  cursor: pointer;
+}
+
+.btn-delete-chip:hover {
+  color: var(--negative-color);
+  background: var(--sig-subtle);
+  border-color: var(--sig-border);
 }
 
 .btn-delete:hover {
