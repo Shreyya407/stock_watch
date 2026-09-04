@@ -31,7 +31,7 @@ export const LandingPage = () => {
           </h1>
 
           <p className="landing-subtitle">
-            GrowwPulse is the intelligent market watchlist for Indian equities that eliminates market noise. 
+            GrowwPulse maintains a personal market snapshot and lets you explicitly mark the current market state as seen. 
             Track real movements from your personal baseline, powered by live NSE data, algorithmic attention scoring, and explainable insights.
           </p>
 
