@@ -2,12 +2,6 @@
 
 > **"What meaningfully changed since I last checked, and what deserves my attention now?"**
 
-[![Live Demo](https://img.shields.io/badge/Vercel-Live_Demo-black?style=for-the-badge&logo=vercel)](https://stock-watch-gamma.vercel.app)
-[![Backend API](https://img.shields.io/badge/Render-API_Live-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://stock-watch-oabd.onrender.com/api/health)
-[![API Docs](https://img.shields.io/badge/FastAPI-Swagger_Docs-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://stock-watch-oabd.onrender.com/docs)
-[![Database](https://img.shields.io/badge/Supabase-PostgreSQL_Database-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
-
----
 
 ## 🌐 Live Deployments
 
