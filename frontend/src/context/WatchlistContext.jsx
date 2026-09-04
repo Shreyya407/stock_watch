@@ -124,111 +124,100 @@ export const WatchlistProvider = ({ children }) => {
     }
   }, [user, loadChanges]);
 
-  // Login handler
+  // Login handler - strictly through Supabase Auth
   const handleLogin = async (email, password) => {
-    let supaAttempted = false;
-    if (isSupabaseConfigured && supabase) {
-      supaAttempted = true;
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (!error && data && data.user && data.session) {
-          const u = {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.user_metadata?.name || data.user.email?.split('@')[0],
-          };
-          setUser(u);
-          api.setToken(data.session.access_token);
-          localStorage.setItem(STORAGE_KEY_TOKEN, data.session.access_token);
-          localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
-          setIsAuthModalOpen(false);
-          return data;
-        } else if (error && !error.message?.toLowerCase().includes('api key')) {
-          throw error;
-        }
-      } catch (err) {
-        if (!err.message?.toLowerCase().includes('api key')) {
-          throw err;
-        }
-        console.warn('Supabase key invalid, using backend auth:', err);
-      }
+    if (!supabase) {
+      throw new Error('Supabase client is not initialized. Please verify frontend/.env configuration.');
     }
 
-    // Backend Auth
-    const res = await api.login(email, password);
-    setUser(res.user);
-    api.setToken(res.token);
-    localStorage.setItem(STORAGE_KEY_TOKEN, res.token);
-    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(res.user));
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      console.error('[Supabase Auth] Login failed:', error.message);
+      throw error;
+    }
+
+    if (!data?.user || !data?.session) {
+      throw new Error('Sign in succeeded but no active session was returned by Supabase.');
+    }
+
+    console.log('[Supabase Auth] Successfully signed in user ID:', data.user.id);
+    const u = {
+      id: data.user.id,
+      email: data.user.email,
+      name: data.user.user_metadata?.name || data.user.email?.split('@')[0],
+    };
+    setUser(u);
+    api.setToken(data.session.access_token);
+    localStorage.setItem(STORAGE_KEY_TOKEN, data.session.access_token);
+    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
     setIsAuthModalOpen(false);
-    return res;
+    return data;
   };
 
-  // Register handler
+  // Register handler - strictly through Supabase Auth
   const handleRegister = async (name, email, password) => {
-    let supaAttempted = false;
-    if (isSupabaseConfigured && supabase) {
-      supaAttempted = true;
-      try {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { name } }
-        });
-        if (!error && data && data.user) {
-          const u = {
-            id: data.user.id,
-            email: data.user.email,
-            name: name || data.user.email?.split('@')[0],
-          };
-          if (data.session) {
-            setUser(u);
-            api.setToken(data.session.access_token);
-            localStorage.setItem(STORAGE_KEY_TOKEN, data.session.access_token);
-            localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
-            setIsAuthModalOpen(false);
-            return data;
-          } else {
-            // Try signing in immediately if auto-confirmed
-            const loginRes = await supabase.auth.signInWithPassword({ email, password });
-            if (loginRes.data && loginRes.data.session) {
-              setUser(u);
-              api.setToken(loginRes.data.session.access_token);
-              localStorage.setItem(STORAGE_KEY_TOKEN, loginRes.data.session.access_token);
-              localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
-              setIsAuthModalOpen(false);
-              return loginRes.data;
-            }
-          }
-        } else if (error && !error.message?.toLowerCase().includes('api key')) {
-          throw error;
-        }
-      } catch (err) {
-        if (!err.message?.toLowerCase().includes('api key')) {
-          throw err;
-        }
-        console.warn('Supabase key invalid, using backend auth:', err);
-      }
+    if (!supabase) {
+      throw new Error('Supabase client is not initialized. Please verify frontend/.env configuration.');
     }
 
-    // Backend Auth
-    const res = await api.register(name, email, password);
-    setUser(res.user);
-    api.setToken(res.token);
-    localStorage.setItem(STORAGE_KEY_TOKEN, res.token);
-    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(res.user));
-    setIsAuthModalOpen(false);
-    return res;
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name: name || email.split('@')[0]
+        }
+      }
+    });
+
+    if (error) {
+      console.error('[Supabase Auth] Sign up failed:', error.message);
+      throw error;
+    }
+
+    if (!data?.user) {
+      throw new Error('Registration failed: User could not be created in Supabase.');
+    }
+
+    console.log('[Supabase Auth] Successfully registered user ID in Supabase:', data.user.id);
+
+    const u = {
+      id: data.user.id,
+      email: data.user.email,
+      name: name || data.user.user_metadata?.name || data.user.email?.split('@')[0],
+    };
+
+    if (data.session) {
+      setUser(u);
+      api.setToken(data.session.access_token);
+      localStorage.setItem(STORAGE_KEY_TOKEN, data.session.access_token);
+      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
+      setIsAuthModalOpen(false);
+      return data;
+    } else {
+      // Try immediate sign-in if email confirmation is turned off in Supabase
+      const loginRes = await supabase.auth.signInWithPassword({ email, password });
+      if (loginRes.data && loginRes.data.session) {
+        setUser(u);
+        api.setToken(loginRes.data.session.access_token);
+        localStorage.setItem(STORAGE_KEY_TOKEN, loginRes.data.session.access_token);
+        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
+        setIsAuthModalOpen(false);
+        return loginRes.data;
+      }
+      return { ...data, requiresEmailConfirmation: true };
+    }
   };
-
-
 
   // Logout handler
   const handleLogout = async () => {
-    if (isSupabaseConfigured && supabase) {
+    if (supabase) {
       try {
         await supabase.auth.signOut();
-      } catch (_) {}
+      } catch (err) {
+        console.warn('[Supabase Auth] Sign out notice:', err.message);
+      }
     }
     setUser(null);
     api.setToken(null);

@@ -11,9 +11,12 @@ from app.models import (
     AddWatchlistRequest,
     WatchlistActionResponse,
     SearchResultItem,
-    UserProfile
+    UserProfile,
+    AuthLoginRequest,
+    AuthRegisterRequest,
+    AuthResponse
 )
-from app.auth import get_current_user
+from app.auth import get_current_user, register_user_account, login_user_account
 from app.storage import storage_service
 from app.nse_service import nse_service
 from app.analytics import (
@@ -37,6 +40,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.post("/api/auth/register", response_model=AuthResponse, summary="Register User")
+async def register(req: AuthRegisterRequest):
+    res = await register_user_account(req.email, req.password, req.name)
+    return AuthResponse(token=res["token"], user=res["user"], message=res["message"])
+
+
+@app.post("/api/auth/login", response_model=AuthResponse, summary="Login User")
+async def login(req: AuthLoginRequest):
+    res = await login_user_account(req.email, req.password)
+    return AuthResponse(token=res["token"], user=res["user"], message=res["message"])
+
+
+@app.get("/api/auth/me", response_model=UserProfile, summary="Get Current Authenticated User")
+async def get_me(user: UserProfile = Depends(get_current_user)):
+    return user
 
 
 @app.get("/api/health", summary="Health Check")

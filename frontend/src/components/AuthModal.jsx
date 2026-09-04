@@ -57,11 +57,15 @@ export const AuthModal = () => {
 
       setLoading(true);
       try {
-        await register(name, email, password);
-        setSuccessMessage('Account created successfully!');
-        setTimeout(() => {
-          setIsAuthModalOpen(false);
-        }, 500);
+        const res = await register(name, email, password);
+        if (res?.requiresEmailConfirmation) {
+          setSuccessMessage('Account created in Supabase! Please check your email to confirm your registration.');
+        } else {
+          setSuccessMessage('Account created successfully in Supabase!');
+          setTimeout(() => {
+            setIsAuthModalOpen(false);
+          }, 800);
+        }
       } catch (err) {
         setErrorMessage(err.message || 'Registration failed.');
       } finally {

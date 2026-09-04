@@ -339,7 +339,7 @@ class NSEMarketDataService:
                 avgVolume20D=round(avg_volume_20d, 0),
                 historicalVolatility=round(typical_volatility, 2),
                 timestamp=now_iso,
-                source="LIVE • YAHOO FINANCE",
+                source="LIVE • NSE",
                 isStale=False,
                 lastUpdatedSecondsAgo=0,
                 sparkline=sparkline if len(sparkline) >= 3 else None,

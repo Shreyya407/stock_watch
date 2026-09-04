@@ -58,7 +58,7 @@ async def test_stale_fallback_when_providers_fail(monkeypatch):
         avgVolume20D=4500000.0,
         historicalVolatility=1.8,
         timestamp="2026-09-04T08:00:00Z",
-        source="LIVE • YAHOO FINANCE"
+        source="LIVE • NSE"
     )
     service._cache["RELIANCE"] = CacheItem(quote=cached_quote, cached_at=time.time() - 60)
 

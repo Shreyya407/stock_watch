@@ -108,3 +108,22 @@ class SearchResultItem(BaseModel):
 class UserProfile(BaseModel):
     id: str
     email: Optional[str] = None
+    name: Optional[str] = None
+
+
+class AuthLoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class AuthRegisterRequest(BaseModel):
+    name: Optional[str] = None
+    email: str
+    password: str
+
+
+class AuthResponse(BaseModel):
+    token: str
+    user: UserProfile
+    message: str = "Success"
+
