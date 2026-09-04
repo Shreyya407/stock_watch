@@ -162,7 +162,7 @@ Frontend will start at: `http://localhost:5173`
    - `SUPABASE_URL`: `https://antgmodxxshcaxeqjbdj.supabase.co`
    - `SUPABASE_SERVICE_ROLE_KEY`: `<service-role-key>`
    - `SUPABASE_ANON_KEY`: `<anon-key>`
-   - `JWT_SECRET`: `growwpulse-jwt-secret-key-2026-secure`
+   - `JWT_SECRET`: `<jwt_secret>`
 
 ### Deploy Frontend to Vercel:
 1. Import repository on Vercel.
